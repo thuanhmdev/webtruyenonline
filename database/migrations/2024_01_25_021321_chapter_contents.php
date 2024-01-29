@@ -15,7 +15,7 @@ return new class extends Migration
             $table->ID();
             $table->string('image');
             $table->integer('order');
-            $table->unsignedInteger('chapter_id');
+            $table->unsignedBigInteger('chapter_id');
             $table->foreign('chapter_id')->references('id')->on('chapters')->onDelete('cascade');
         });
     }

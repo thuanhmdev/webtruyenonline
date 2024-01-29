@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comic_objects', function (Blueprint $table) {
+        Schema::create('comic_genres', function (Blueprint $table) {
+            // $table->id();
 
-            $table->unsignedInteger('object_id');
-            $table->unsignedInteger('comic_id');
-            $table->foreign('object_id')->references('id')->on('objects')->onDelete('cascade');
+            $table->unsignedBigInteger('genre_id');
+            $table->unsignedBigInteger('comic_id');
+            $table->foreign('genre_id')->references('id')->on('genres')->onDelete('cascade');
             $table->foreign('comic_id')->references('id')->on('comics')->onDelete('cascade');
-            $table->primary(['object_id', 'comic_id']);
+            $table->primary(['genre_id', 'comic_id']);
         });
     }
 

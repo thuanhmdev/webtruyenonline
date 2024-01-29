@@ -16,8 +16,8 @@ return new class extends Migration
             $table->ID();
             $table->string('name');
             $table->string('description')->nullable();
-            $table->unsignedInteger('comic_id');
-            $table->foreign('comic_id')->references('id')->on('comics')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('comic_id');
+            $table->foreign('comic_id')->references('id')->on('comics')->onDelete('cascade');
         });
     }
 
