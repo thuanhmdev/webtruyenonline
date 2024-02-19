@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ComicController extends Controller
@@ -24,17 +25,6 @@ class ComicController extends Controller
                 'status' => 200
             ]);
         } catch (\Throwable $e) {
-
-            $error = [
-                'error' => [
-                    'message' => $e->getMessage(),
-                    'code' => $e->getCode(),
-                    'line' => $e->getLine(),
-                    'file' => $e->getFile()
-                ]
-            ];
-
-            return response()->json($error, 500);
         }
     }
 
@@ -48,32 +38,6 @@ class ComicController extends Controller
      */
     public function create(Request $request)
     {
-
-
-        // $validateData = $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'otherName' => 'nullable|string|max:255',
-        //     'description' => 'nullable|string',
-        //     'status' => 'nullable|string|max:255',
-        //     'author' => 'nullable|string|max:255',
-        //     'propose' => 'required|boolean',
-        // ]);
-
-        // $comic = Comic::create($validateData);
-
-        // return response()->json([
-        //     'data' => $comic
-        // ], 201);
-
-        // $validator =  $this->validate($request, [
-        //     'name' => 'required|string|max:255',
-        //     'otherName' => 'nullable|string|max:255',
-        //     'description' => 'nullable|string',
-        //     'status' => 'nullable|string|max:255',
-        //     'author' => 'nullable|string|max:255',
-        //     'propose' => 'required|boolean',
-        // ]);
-
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
@@ -82,13 +46,19 @@ class ComicController extends Controller
                 'status' => 'nullable|string|max:255',
                 'author' => 'nullable|string|max:255',
                 'propose' => 'required|boolean',
+                'avatar' => "nullable|image|mimes:jpeg,png,jpg|max:3072",
             ]);
-
-            if ($validator->fails()) {
-                return response()->json(['status' => false, 'mess' => 'Error!', 'errors' => $validator->errors()], Response::HTTP_BAD_REQUEST);
+            $validator->validate();
+            // if ($validator->fails()) {
+            //     return response()->json(['status' => false, 'mess' => 'Error!', 'errors' => $validator->errors()], Response::HTTP_BAD_REQUEST);
+            // }
+            $data = $request->all();
+            if ($request->hasFile('avatar')) {
+                $img_path = $request->file('avatar')->store('public/comic');
+                $data["avatar"] = str_replace('public/', '', $img_path);
             }
 
-            Comic::create($request->all());
+            Comic::create($data);
 
             return response()->json(['status' => true, 'mess' => ' created!'], Response::HTTP_OK);
         } catch (\Throwable $e) {
@@ -141,14 +111,15 @@ class ComicController extends Controller
                 return response()->json([], response::HTTP_BAD_REQUEST);
             }
 
-            $comicById = Comic::find($id);
+            $dataById = Comic::find($id);
 
-            if (!$comicById) {
+            if (!$dataById) {
                 return response()->json([
                     'status' => false,
                     'mess' => 'Comic not found',
                 ], response::HTTP_BAD_REQUEST);
             }
+
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
@@ -157,13 +128,23 @@ class ComicController extends Controller
                 'status' => 'nullable|string|max:255',
                 'author' => 'nullable|string|max:255',
                 'propose' => 'required|boolean',
+                'avatar' => "nullable|image|mimes:jpeg,png,jpg|max:3072",
             ]);
 
-            if ($validator->fails()) {
-                return response()->json(['status' => false, 'mess' => 'Error!', 'errors' => $validator->errors()], Response::HTTP_BAD_REQUEST);
+            // if ($validator->fails()) {
+            //     return response()->json(['status' => false, 'mess' => 'Error!', 'errors' => $validator->errors()], Response::HTTP_BAD_REQUEST);
+            // }
+            $validator->validator();
+
+            if ($request->hasFile('avatar')) {
+                if (!empty($dataById->avatar) && Storage::exists('public/comic/' . $dataById->avatar)) {
+                    Storage::delete('public/' . $dataById->avatar);
+                }
+                $image_path = $request->file('avatar')->store('public/comic');
+                $dataById->avatar =  str_replace('public/', "", $image_path);
             }
 
-            $comicById->update($request->all(['name', 'otherName', 'description', 'status', 'author', 'propose']));
+            $dataById->update($request->all(['name', 'avatar', 'otherName', 'description', 'status', 'author', 'propose',]));
 
             return response()->json(['status' => true, 'mess' => ' Updated!'], Response::HTTP_OK);
         } catch (\Throwable $e) {

@@ -15,11 +15,12 @@ return new class extends Migration
         Schema::create('comics', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('avatar')->nullable();
             $table->string('otherName')->nullable();
             $table->string('description')->nullable();
             $table->string('status')->nullable();
             $table->string('author')->nullable();
-            $table->boolean('propose');
+            $table->boolean('propose')->default(1);
             $table->timestamps();
         });
     }

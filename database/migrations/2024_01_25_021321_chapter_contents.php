@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('image');
             $table->integer('order');
             $table->unsignedBigInteger('chapter_id');
+            $table->timestamps();
             $table->foreign('chapter_id')->references('id')->on('chapters')->onDelete('cascade');
         });
     }
